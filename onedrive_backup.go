@@ -9,17 +9,11 @@ import (
 	"time"
 )
 
-
 func runCommand(name string, args ...string) error {
-    configPath := "/home/davidapdf/.config/rclone/rclone.conf"
-    
-    // Prepend the --config flag to the rclone arguments
-    finalArgs := append([]string{"--config", configPath}, args...)
-
-    cmd := exec.Command(name, finalArgs...)
-    cmd.Stdout = os.Stdout
-    cmd.Stderr = os.Stderr
-    return cmd.Run()
+	cmd := exec.Command(name, args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	return cmd.Run()
 }
 
 func main() {
@@ -27,9 +21,9 @@ func main() {
 	localBase := "/home/davidapdf/bkp_tmp/onedrive_snapshots"
 	onedriveFolders := []struct {
 		remotePath string
-		localName string
+		localName  string
 	}{
-		{"temp","temp"},
+		{"temp", "temp"},
 	}
 	googleDriveRemote := "gdrive:OneDrive_Snapshots"
 
@@ -43,7 +37,7 @@ func main() {
 	//Step 1: Download selected folders from OneDrive
 	for _, folder := range onedriveFolders {
 		localPath := filepath.Join(snapshotFolder, folder.localName)
-		remote := fmt.Sprintf("onedrive:%s",folder.remotePath)
+		remote := fmt.Sprintf("onedrive:%s", folder.remotePath)
 		fmt.Printf("Copying from %s to %s\n", remote, localPath)
 		err := runCommand("rclone", "copy", remote, localPath, "--progress")
 		if err != nil {
