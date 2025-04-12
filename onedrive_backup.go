@@ -18,12 +18,16 @@ func runCommand(name string, args ...string) error {
 
 func main() {
 	//CONFIG
-	localBase := "/home/davidapdf/bkp_tmp/onedrive_snapshots"
+	home, err := os.UserHomeDir()
+	if err != nil {
+		log.Fatalf("Unable to get home directory: %v", err)
+	}
+	localBase := filepath.Join(home, "bkp_tmp", "onedrive_snapshots")
 	onedriveFolders := []struct {
 		remotePath string
 		localName  string
 	}{
-		{"temp", "temp"},
+		{"Obsidian", "Obsidian"},
 	}
 	googleDriveRemote := "gdrive:OneDrive_Snapshots"
 
@@ -47,10 +51,18 @@ func main() {
 	}
 	// Step 2: Upload snapshot to Google Drive
 	fmt.Printf("Uploading snapshot to Google Drive...\n")
-	err := runCommand("rclone", "copy", snapshotFolder, fmt.Sprintf("%s/onedrive_snapshot_%s", googleDriveRemote, date), "--progress")
+	err = runCommand("rclone", "copy", snapshotFolder, fmt.Sprintf("%s/onedrive_snapshot_%s", googleDriveRemote, date), "--progress")
 	if err != nil {
 		log.Fatalf("Failed to upload snapshot to Google Drive: %v", err)
 	}
+
+	// Step 2b: Upload snapshot to OneDrive "bkp" folder
+	fmt.Printf("Uploading snapshot to OneDrive 'bkp' folder...\n")
+	err = runCommand("rclone", "copy", snapshotFolder, fmt.Sprintf("onedrive:bkp/onedrive_snapshot_%s", date), "--progress")
+	if err != nil {
+		log.Fatalf("Failed to upload snapshot to OneDrive backup folder: %v", err)
+	}
+
 	// Step 3: Optional clean up
 	fmt.Println("Cleaning up local snapshot...")
 	err = os.RemoveAll(snapshotFolder)
@@ -59,4 +71,5 @@ func main() {
 	}
 
 	fmt.Println("Backup complete!")
+
 }
