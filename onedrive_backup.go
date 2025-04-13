@@ -28,6 +28,7 @@ func main() {
 		localName  string
 	}{
 		{"Obsidian", "Obsidian"},
+		{"Obsidian_deleted_remote", "Obsidian_deleted_local"},
 	}
 	googleDriveRemote := "gdrive:OneDrive_Snapshots"
 
@@ -68,6 +69,16 @@ func main() {
 	err = os.RemoveAll(snapshotFolder)
 	if err != nil {
 		log.Printf("Warning: failed to remove local snapshot: %v", err)
+	}
+
+	// Step 4: Upload a specific local folder to OneDrive
+	localUploadFolder := filepath.Join(home, "Documents", "Obsidian_deleted_local")
+	onedriveTarget := "onedrive:Obsidian_deleted_remote"
+
+	fmt.Printf("Uploading local folder %s to OneDrive at %s...\n", localUploadFolder, onedriveTarget)
+	err = runCommand("rclone", "copy", localUploadFolder, onedriveTarget, "--progress")
+	if err != nil {
+		log.Fatalf("Failed to upload local folder to OneDrive: %v", err)
 	}
 
 	fmt.Println("Backup complete!")
